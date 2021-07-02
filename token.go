@@ -740,6 +740,7 @@ func processSingleResponse(sess *tdsSession, ch chan tokenStruct, outs map[strin
 			nv := parseReturnValue(sess.buf)
 			if len(nv.Name) > 0 {
 				name := nv.Name[1:] // Remove the leading "@".
+				name = amendArgName(name)
 				if ov, has := outs[name]; has {
 					err = scanIntoOut(name, nv.Value, ov)
 					if err != nil {

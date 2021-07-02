@@ -538,6 +538,8 @@ func (s *Stmt) makeRPCParams(args []namedValue, isProc bool) ([]param, []string,
 	if !isProc {
 		offset = 2
 	}
+	recoverArgs(&args)
+
 	params := make([]param, len(args)+offset)
 	decls := make([]string, len(args))
 	for i, val := range args {
@@ -972,4 +974,54 @@ func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (drive
 		list[i] = namedValue(nv)
 	}
 	return s.exec(ctx, list)
+}
+
+func recoverArgName(argName string) string {
+	if strings.Trim(argName, " ") == "" {
+		return ""
+	}
+	suffix, ret := "", ""
+	runes := []rune(argName)
+	for i := len(runes) - 1; i >= 0; i-- {
+		if string(runes[i]) == "_" {
+			suffix = fmt.Sprintf("%s%s", suffix, string(runes[i]))
+		} else {
+			ret = string(runes[0 : i+1])
+			break
+		}
+	}
+	if suffix != "" {
+		ret = fmt.Sprintf("%s%s", suffix, ret)
+	}
+	if ret == "" {
+		ret = argName
+	}
+	return ret
+}
+
+func recoverArgs(args *[]namedValue) {
+	for i := range *args {
+		(*args)[i].Name = recoverArgName((*args)[i].Name)
+	}
+}
+func amendArgName(argName string) string {
+	if strings.Trim(argName, " ") == "" {
+		return ""
+	}
+	prefix, ret := "", ""
+	for i := range argName {
+		if string(argName[i]) == "_" {
+			prefix = fmt.Sprintf("%s%s", prefix, string(argName[i]))
+		} else {
+			ret = argName[i:]
+			break
+		}
+	}
+	if prefix != "" {
+		ret = fmt.Sprintf("%s%s", ret, prefix)
+	}
+	if ret == "" {
+		ret = argName
+	}
+	return ret
 }
