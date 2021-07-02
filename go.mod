@@ -1,4 +1,4 @@
-module github.com/denisenkom/go-mssqldb
+module github.com/fttx2020/go-mssqldb
 
 go 1.11
 
